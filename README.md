@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
@@ -48,3 +49,7 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+=======
+# MusicLessons4U
+User-friendly and intuitive mobile application that seamlessly connects teachers and students, consolidating all relevant information in one centralized platform. The app will serve as an organized, easy-to-use teaching tool designed to engage and motivate students, encouraging regular use and enhancing the learning experience. 
+>>>>>>> 1406cb16255dd7c8f86c931450449c429b8073ab
