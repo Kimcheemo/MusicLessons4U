@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MusicLessons4U",
-    "slug": "MusicLessons4U",
+    "slug": "musiclessons4u",
     "scheme": "musiclessons4u",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "88b0e513-ec08-4b7d-98b4-958edf55e85b"
+      }
+    },
+    "owner": "lezleuterio"
   }
 }
