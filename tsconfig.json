@@ -2,10 +2,10 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".",                // ensure paths start at project root
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@src/*": ["src/*"],         // alias @src to the src folder
+      "@/*": ["src/*"]             // optional: allow @ to mean the same as @src
     }
   },
   "include": [
@@ -13,3 +13,4 @@
     "**/*.tsx"
   ]
 }
+
