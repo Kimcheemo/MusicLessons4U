@@ -1,73 +1,67 @@
-import { useState, useEffect } from 'react'
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { Alert, AppState, StyleSheet, Image, Platform, View } from 'react-native';
+import { useState } from 'react'
+import { Alert, StyleSheet, View } from 'react-native';
 import { supabase } from '@/lib/supabase'
-import Auth from '@/components/Auth'
-import Account from '@/components/Account'
-import { Session } from '@supabase/supabase-js'
 import { Button, Input } from '@rneui/themed'
 import { useRouter } from 'expo-router';
-import { getApiUrl } from '../src/lib/api'
-
 
 export default function SignUp() {
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)   // true: network request starts, false: once request finishes or fails
   const router = useRouter()
 
   async function signUpWithEmail() {
     console.log("Sign Up button pressed")
-
     setLoading(true)
 
-    // If user object exists, insert into Students table
+    // Make sure fields are filled
+    if (!email || !password) {
+      Alert.alert("Missing Info", "Please enter both email and password.");
+      setLoading(false);
+      return;
+    }
+
+    // Use Supabase Auth to sign up for an account
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
-    password,
-    //options: {
-    //  emailRedirectTo: Platform.select({
-    //    web: "https://musiclessons4u.vercel.app/auth/callback",
-    //    default: "musiclessons4u://auth/callback",
-    //  }),
-    //},
+    password,   // Password is securely stored in Auth tables
     })
 
-    console.log("signUpData:", signUpData)
-    console.log("signUpError:", signUpError)
+    //console.log("signUpData:", signUpData)
+    //console.log("signUpError:", signUpError)
 
-    if (signUpError) throw new Error(signUpError.message)
+    // Supabase catches invalid email addresses
+    if (signUpError) {
+      const msg = signUpError.message.toLowerCase();
 
+      if (msg.includes("is invalid") || msg.includes("invalid")) {
+        Alert.alert("Invalid Email", "Please enter a valid email address.");
+      } else {
+        Alert.alert("Sign-Up Error", signUpError.message);
+      }
+
+      setLoading(false);
+      return;
+    }
+
+    // Newly created User ID from Supabase after a successful sign-up
     const userId = signUpData.user?.id
-    if (!userId) throw new Error("No user ID returned from Supabase")
-
     console.log("userId:", userId)
 
     if (!userId) {
-      Alert.alert("Error", "No user ID returned from Supabase")
-      setLoading(false)
-      return
+      Alert.alert("Error", "No user ID returned from Supabase");
+      setLoading(false);
+      return;
     }
-
-    // 2️⃣ Insert into Students table using anon key + RLS
-      const { error: insertError } = await supabase.from('Students').insert([
-        {
-          user_id: userId,
-          email_address: email,
-          created_at: new Date(),
-        },
-      ])
-
-      if (insertError) throw new Error(insertError.message)
-
-      console.log("Student record created successfully")
 
     Alert.alert(
       "Success",
       "Please check your inbox for email verification before logging in."
     )
+
+    // Here user should go to their email to verify account. 
+    // Email should contain a link that opens a page saying, "You account has been verified. Please login to continue."
 
     setLoading(false)
     router.replace("/sign-in")

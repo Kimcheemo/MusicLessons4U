@@ -53,3 +53,12 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Testing email verify
+
+Skip for now. Verify link sent through email cannot work unless eas build is made - in order to test deep links. 
+For now, verify in Supabase w/ SQL:
+
+update auth.users
+set email_confirmed_at = now()
+where email = 'user@example.com';

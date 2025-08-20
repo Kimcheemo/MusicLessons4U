@@ -1,61 +1,92 @@
-import { useState } from 'react';
-import { View, StyleSheet, Alert, ScrollView } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, StyleSheet, Alert, ScrollView, TextInput } from 'react-native';
 import { Input, Button } from '@rneui/themed';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
+import SpinnerDatePicker from '@/components/SpinnerDatePicker';
+
 
 export default function StudentSignupProfile() {
   const router = useRouter();
+  const [showPicker, setShowPicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // State for each input field
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [age, setAge] = useState('');
-  const [instrument, setInstrument] = useState('');
-  const [experience, setExperience] = useState('');
+  const [firstName, setFirstName] = useState(''); //required
+  const [lastName, setLastName] = useState(''); //required
+  const [DOB, setDOB] = useState<Date | null>(null); //optional
+  const [phoneNum, setPhoneNum] = useState(null); //optional
+  const [prefContact, setPrefContact] = useState(null); //optional
+  const [emergencyContact, setEmergencyContact] = useState(null); //optional
+  const [parentGuardian, setParentGuardian] = useState(null); //optional
+
+  // next page will be for profile stuff: instrument, bio, photo
+
   const [loading, setLoading] = useState(false);
 
-  const saveProfile = async () => {
+  useEffect(() => {
+  supabase.auth.getSession().then(({ data }) => {
+    console.log("Session on mount:", data?.session);
+  });
+}, []);
+
+  const handleSubmit = async () => {
+
     setLoading(true);
 
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    try {
+        const { data, error } = await supabase.auth.getSession();
+        const user = data?.session?.user;
 
-    if (userError || !user) {
-      Alert.alert('Error', 'No logged-in user found');
-      setLoading(false);
-      return;
+        if (!user) {
+        Alert.alert('Error', 'User not authenticated.');
+        return;
+        }
+
+        const userId = user.id;
+        const email = user.email;
+
+        const studentData = {
+            user_id: user.id,
+            first_name: firstName,
+            last_name: lastName,
+            email_address: user.email,
+            date_of_birth: DOB,
+            phone_num: phoneNum,
+            pref_contact: prefContact,
+            emergency_contact: emergencyContact,
+            parent_guardians: parentGuardian,
+        };
+
+        const { error: insertError } = await supabase
+            .from('Students')
+            .insert(studentData);
+
+        if (insertError) {
+            console.error('Insert failed:', insertError.message);
+            Alert.alert('Error', 'Failed to save profile.');
+        } else {
+            console.log('Student record created successfully!');
+            router.push('/success'); // or wherever you want to go next
+        }
+    } finally {
+        setLoading(false);
     }
 
-    const { error } = await supabase.from('profiles').insert([
-      {
-        id: user.id, // link profile to auth user
-        first_name: firstName,
-        last_name: lastName,
-        age,
-        instrument,
-        experience,
-      },
-    ]);
-
-    if (error) {
-      Alert.alert('Error', error.message);
-    } else {
-      Alert.alert('Success', 'Profile saved!');
-      router.push('/'); // navigate somewhere after saving
-    }
-
-    setLoading(false);
   };
 
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Input label="First Name" value={firstName} onChangeText={setFirstName} placeholder="John" />
-      <Input label="Last Name" value={lastName} onChangeText={setLastName} placeholder="Doe" />
-      <Input label="Age" value={age} onChangeText={setAge} placeholder="18" keyboardType="numeric" />
-      <Input label="Instrument" value={instrument} onChangeText={setInstrument} placeholder="Piano" />
-      <Input label="Experience Level" value={experience} onChangeText={setExperience} placeholder="Beginner / Intermediate / Advanced" />
-      <Button title="Save Profile" disabled={loading} onPress={saveProfile} />
+    <ScrollView contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="handled" >
+      <View style={{ padding: 16 }}>
+        <Input label="First Name" value={firstName} onChangeText={setFirstName} placeholder="John" />
+        <Input label="Last Name" value={lastName} onChangeText={setLastName} placeholder="Doe" />
+        <SpinnerDatePicker label="Date of Birth (optional)" value={DOB} onChange={setDOB} maximumDate={new Date()} />
+        <Input label="Phone Number" value={phoneNum} onChangeText={setPhoneNum} keyboardType="phone-pad" placeholder="Optional" maxLength={15} />
+        <Input label="Emergency Contact" value={emergencyContact} onChangeText={setEmergencyContact} keyboardType="phone-pad" placeholder="Optional" maxLength={15} />
+        <Input label="Parent Guardian (if applicable)" value={parentGuardian} onChangeText={setParentGuardian} placeholder="Optional" />
+        <Button title="Next" disabled={loading} onPress={handleSubmit} />
+      </View>
     </ScrollView>
   );
 }

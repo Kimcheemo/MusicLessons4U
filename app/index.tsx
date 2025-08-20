@@ -1,22 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Alert, AppState, StyleSheet, Image, Platform, View, Modal, TextInput } from 'react-native';
-import { supabase } from '@/lib/supabase'
-import Auth from '@/components/Auth'
-import Account from '@/components/Account'
-import { Session } from '@supabase/supabase-js'
-import { Button, Input } from '@rneui/themed'
-import { router, useRouter } from 'expo-router';
+import { StyleSheet, View, Modal, TextInput } from 'react-native';
+import { Button } from '@rneui/themed'
+import { useRouter } from 'expo-router';
 
 export default function EnterScreen() {
-
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [code, setCode] = useState("");
 
+  // To prevent random ppl from creating aan account. Code given by teacher.
   const handleCheckCode = () => {
-    if (code === "1234") { // 🔑 replace with your real code
+    if (code === "1234") { // replace with your real code
       setShowModal(false);
       router.push("/sign-up");
     } else {
